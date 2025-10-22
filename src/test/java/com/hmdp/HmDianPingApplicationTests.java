@@ -54,6 +54,9 @@ class HmDianPingApplicationTests {
         System.out.println("time = " + (end - begin));
     }
 
+    /**
+     * 保存店铺数据到Redis - 缓存预热，为了实现附近商户的功能
+     */
     @Test
     void loadShopData() {
         // 1.查询店铺信息
@@ -78,5 +81,25 @@ class HmDianPingApplicationTests {
             }
             stringRedisTemplate.opsForGeo().add(key, locations);
         }
+    }
+
+    /**
+     * 测试HyperLogLog
+     */
+    @Test
+    void testHyperLogLog() {
+        String[] values = new String[1000];
+        int j = 0;
+        for (int i = 0; i < 1000000; i++) {
+            j = i % 1000;
+            values[j] = "user_" + i;
+            if (j == 999) {
+                // 发送数据
+                stringRedisTemplate.opsForHyperLogLog().add("hl1", values);
+            }
+        }
+        // 统计数量
+        long count = stringRedisTemplate.opsForHyperLogLog().size("hl1");
+        System.out.println("count = " + count);
     }
 }
